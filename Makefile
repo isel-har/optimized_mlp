@@ -28,7 +28,13 @@ libs:
 	@echo "Downloading libraries..."
 	mkdir -p $(LIBDIR)
 	wget -P $(LIBDIR) $(CSVLIB) $(PLOTLIB) $(JSONLIB)
-	git clone $(EIGENLIB) $(LIBDIR)/eigen
+
+	@if [ ! -d "$(LIBDIR)/eigen" ]; then \
+		echo "Folder not found, cloning..."; \
+		git clone $(EIGENLIB) $(LIBDIR)/eigen; \
+	else \
+		echo "Folder exists, skipping clone."; \
+	fi
 
 
 $(TARGET): libs
@@ -36,6 +42,5 @@ $(TARGET): libs
 
 # # clean:
 # 	rm -f $(TARGET)
-
 
 .PHONY: all libs clean fclean

@@ -53,7 +53,7 @@ std::vector<json>  MLPClassifier::default_layers() {
     return jlayers;
 }
 
-void    MLPClassifier::build(void) {
+void    MLPClassifier::build(void) { // need ranged/protections!
 
     if (this->confptr == nullptr) throw std::runtime_error("config object required to build.");
     
@@ -63,13 +63,13 @@ void    MLPClassifier::build(void) {
     std::string optimizer_str = conf.value("optimizer", std::string("gd"));
 
     this->epochs      = conf.value("epochs", 10);
-    this->max_iter    = conf.value("max_iter", 1000);
     this->input_shape = conf.value("input_shape", 1);
     this->batch_size  = conf.value("batch_size", 32);
 
     std::vector<std::string>metrics = conf.value("metrics", std::vector<std::string>({"loss"}));
 
     auto unique_metrics = std::unordered_set<std::string>(metrics.begin(), metrics.end());
+    unique_metrics.erase("loss");
     // pop loss here and always use it
     for (const auto& metric:unique_metrics) {
         if (MLPClassifier::metricsMap.find(metric) != MLPClassifier::metricsMap.end()) {
@@ -144,7 +144,7 @@ History MLPClassifier::fit(const MatrixXd&x, const MatrixXd&y) {
             this->backward(loss);
             this->optimizer->update(this->layers);
         }
-        std::cout<<"epoch "<<e<<'/'<<this->epochs; 
+        std::cout<<"epoch "<< e <<'/'<<this->epochs; 
         this->print_save_metrics(e, this->feed(x), y, history);
     }
     return history;

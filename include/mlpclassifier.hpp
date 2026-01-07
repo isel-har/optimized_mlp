@@ -19,7 +19,6 @@ private:
     static std::unordered_map<std::string, Metric*> metricsMap;
 
     unsigned int        epochs;
-    unsigned int        max_iter;
     unsigned int        batch_size;
     unsigned int        input_shape;
     bool                built;
