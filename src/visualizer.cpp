@@ -22,17 +22,19 @@ void Visualizer::plot_metric(const std::string& title, const std::vector<double>
 }
 
 void Visualizer::double_plot_metric(const std::string& title, 
-    std::pair<const std::vector<double>&, std::vector<double>&> data, 
-    const std::string& ylabel, const std::string& color)
+    const std::pair<std::vector<double>, std::vector<double>> &data, 
+    const std::string& ylabel,
+    std::pair<std::string, std::string>colors)
 {
     std::vector<double> epochs = get_epochs(data.first.size());
     plt::figure();
-    plt::named_plot(title, epochs, data.first, color);
-    plt::named_plot(title, epochs, data.second, color); // to add!
-    plt::title("Training " + title);
-    plt::xlabel(ylabel);
-    plt::ylabel(title);
+    plt::plot(epochs, data.first,  {{"color", colors.first}});
+    plt::plot(epochs, data.second, {{"color", colors.second}, {"linestyle","--"}});
+    plt::title(title);
+    plt::xlabel("Epoch");
+    plt::ylabel(ylabel);
     plt::grid(true);
+    // plt::legend();
 }
 
 void Visualizer::show() {

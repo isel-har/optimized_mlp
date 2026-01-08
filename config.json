@@ -1,30 +1,52 @@
 {
-  "train": {
-    "data": "data/train.csv",
-    "batch_size": 64,
-    "epochs": 10,
-    "learning_rate": 0.01,
-    "metrics": ["accuracy", "precision"],
-    "early_stopping": true,
-    "input_shape": 31,
-    "layers": [
-      {
-        "size": 32,
-        "activation": "relu"
-      },
-      {
-        "size": 16,
-        "activation": "relu"
-      },
-      {
-        "size": 2,
-        "activation": "softmax"
-      }
-    ],
-    "optimizer": "gd"
-  },
-  "test": {
-    "data": "data/test.csv",
-    "model": "model.bin"
-  }
+	"training": {
+		"data": {
+			"val":"data/data_val.csv",
+			"train":"data/data_train.csv"
+		},
+		"models": [
+			{
+				"batch_size":64,
+				"epochs":10,
+				"learning_rate":0.01,
+				"metrics":["accuracy", "precision"],
+				"early_stopping":false,
+				"optimizer":"gd",
+				"layers":[
+					{
+						"size": 64,
+						"activation": "relu"
+					},
+					{
+						"size": 32,
+						"activation": "relu"
+					},
+					{
+						"size": 2,
+						"activation": "softmax"
+					}
+				]
+			},
+			{
+				"batch_size":64,
+				"epochs":30,
+				"learning_rate":0.01,
+				"metrics":["accuracy"],
+				"early_stopping":true,
+				"optimizer":"gd",
+				"layers":[
+					{
+						"size": 16,
+						"activation": "sigmoid"
+					},
+					{
+						"size": 2,
+						"activation": "softmax"
+					}
+				]
+			}
+		]
+	},
+	"prediction": {
+	}
 }

@@ -3,14 +3,17 @@
 
 #include "rapidcsv.h"
 #include <Eigen/Dense>
+#include <utility>
 
 using namespace Eigen;
 
-struct xy_eigen {
-    MatrixXd Y;
-    MatrixXd X;
-};
+typedef struct DatasetSplit {
+    MatrixXd X_train;
+    MatrixXd y_train;
+    MatrixXd X_val;
+    MatrixXd y_val;
+} t_split;
 
-xy_eigen    csv_to_eigen(const std::string &);
+std::pair<MatrixXd, MatrixXd> csv_to_eigen(const std::string &);
 
 #endif

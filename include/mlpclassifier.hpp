@@ -11,6 +11,7 @@
 #include "json.hpp"
 #include <fstream>
 #include <utility>
+#include "csv_to_eigen.hpp"
 
 using json = nlohmann::json;
 
@@ -40,14 +41,14 @@ public:
     void    load();
     void    save() const;
     void    build(void);
-    History fit(const MatrixXd&, const MatrixXd&);
+    History fit(const t_split &);
 
     std::vector<json>  default_layers();
 
     MatrixXd    predict(const MatrixXd&);
     MatrixXd    argmax(const MatrixXd &) const;
 
-    void        print_save_metrics(unsigned int,const MatrixXd&, const MatrixXd&, History&) const;
+    void        train_val_metrics(unsigned int epoch, const t_split &dataset, History &history);
 };
 
 static std::unordered_map<std::string, Metric*> metricsMap;

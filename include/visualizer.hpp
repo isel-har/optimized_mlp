@@ -21,10 +21,10 @@ public:
                             const std::string& color);
 
     static void double_plot_metric(const std::string& title, 
-                            std::pair<const std::vector<double>&, std::vector<double>&> data, 
-                            const std::string& ylabel, 
-                            const std::string& color);
-    // High-level method to show everything
+    const std::pair<std::vector<double>, std::vector<double>> &data, 
+    const std::string& ylabel,
+    std::pair<std::string, std::string>colors);
+
     static void show();
 };
 

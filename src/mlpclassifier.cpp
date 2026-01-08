@@ -10,28 +10,48 @@ MLPClassifier::MLPClassifier(const json &conf):built(false) {
     this->confptr = &conf;
 }
 
-MLPClassifier::~MLPClassifier(){
+MLPClassifier::~MLPClassifier() {
     for (size_t i = 0; i < this->metrics.size(); ++i) {
         this->metrics[i].second = nullptr;
     }
 }
-void    MLPClassifier::print_save_metrics(unsigned int epoch, const MatrixXd&ypred, const MatrixXd&ytrue, History &history) const
-{
-    unsigned int index = epoch - 1;
-    double loss = this->metricsMap["loss"]->compute(ypred, ytrue);
-    history.loss[index] = loss;
 
-    MatrixXd ypmax = this->argmax(ypred);
+void    MLPClassifier::train_val_metrics(unsigned int epoch, const t_split &dataset, History &history)
+{
+    MatrixXd ypred_train = this->feed(dataset.X_train);
+    MatrixXd ypred_val   = this->feed(dataset.X_val);
+
+    MatrixXd ypmax_train = this->argmax(ypred_train);
+    MatrixXd ypmax_val   = this->argmax(ypred_val);
+    unsigned int index   = epoch - 1;
+    
+    std::cout << "epoch " << epoch << '/' << this->epochs;
+
+    double loss = this->metricsMap["loss"]->compute(ypred_train, dataset.y_train);
+    double loss_val = this->metricsMap["loss"]->compute(ypred_val, dataset.y_val);
+    history.loss_pair.first[index]  = loss;
+    history.loss_pair.second[index] = loss_val;
+
     for (auto& [name, vecPtr] : history.vecMap) {
         if (name != "loss") {
-            double metric_val = this->metricsMap[name]->compute(ypmax, ytrue);
-            vecPtr->at(index) = metric_val;
-        }
+            double metric_train = this->metricsMap[name]->compute(ypmax_train, dataset.y_train);
+            double metric_val   = this->metricsMap[name]->compute(ypmax_val, dataset.y_val);
+            vecPtr->first.at(index)  = metric_train;
+            vecPtr->second.at(index) = metric_val;
+        }  
     }
-    std::cout << "- loss:"<<loss;
+
+    std::cout << "- loss:" << loss;
     for (const auto &metric:this->metrics) {
-        double metric_val = history.vecMap[metric.first]->at(index);
-        std::cout << " - "<< metric.first << ": "<<metric_val;
+        double metric_ = history.vecMap[metric.first]->first.at(index);
+        std::cout << " - "<< metric.first << ':' <<metric_;
+    }
+
+    std::cout << " | val metric:";
+    std::cout << "- loss:" << loss_val;
+    for (const auto &metric:this->metrics) {
+        double metric_ = history.vecMap[metric.first]->second.at(index);
+        std::cout << " - "<< metric.first << ':' <<metric_;
     }
     std::cout << std::endl;
 }
@@ -122,33 +142,49 @@ MatrixXd    MLPClassifier::argmax(const MatrixXd &y_probs) const {
     return result;
 }
 
-History MLPClassifier::fit(const MatrixXd&x, const MatrixXd&y) {
+History MLPClassifier::fit(const t_split &dataset) {
 
     if (!this->built)
         throw std::runtime_error("build required before training phase.");
 
     History history(this->epochs);
 
+    // double  optimal_loss = std::numeric_limits<double>::max();
+    // char    patience     = 6;
+    // char    times        = 0;
+
     for (unsigned int e = 1; e <= this->epochs; ++e) {
 
-        for (unsigned int i = 0; i < (unsigned int)x.rows(); i += batch_size) {
+        for (unsigned int i = 0; i < (unsigned int)dataset.X_train.rows(); i += batch_size) {
             
-            unsigned int end = std::min(i + batch_size, (unsigned int)x.rows());
+            unsigned int end = std::min(i + batch_size, (unsigned int)dataset.X_train.rows());
             
-            MatrixXd xbatch = x.middleRows(i, end - i);
-            MatrixXd ybatch = y.middleRows(i, end - i);
+            MatrixXd xbatch = dataset.X_train.middleRows(i, end - i);
+            MatrixXd ybatch = dataset.y_train.middleRows(i, end - i);
             
             MatrixXd probs = this->feed(xbatch);
             MatrixXd loss  = (probs.array() - ybatch.array()).matrix();
 
             this->backward(loss);
             this->optimizer->update(this->layers);
-        }
-        std::cout<<"epoch "<< e <<'/'<<this->epochs; 
-        this->print_save_metrics(e, this->feed(x), y, history);
+        } 
+        this->train_val_metrics(e, dataset, history);
+        /*
+            early stopping
+        */
+        // if (history.loss_pair.second[e - 1] < optimal_loss) {
+        //     optimal_loss = history.loss_pair.second[e- 1];
+        //     times = 0;
+        // }
+        // else
+        //     ++times;
+        // if (times >= patience)
+        //     break;
+
     }
     return history;
 }
+
 
 
 void    MLPClassifier::save() const
