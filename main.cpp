@@ -30,7 +30,7 @@ int main(int argc, char **argv)
             return 1;
         }
         if (op == "train") {
-            json conf = load_json(argv[2])["training"];
+            json conf = load_json(argv[2]);
             t_split datasplit;
             {
                 std::pair<MatrixXd, MatrixXd> train_dataset = csv_to_eigen(conf["data"]["train"]);
@@ -41,26 +41,28 @@ int main(int argc, char **argv)
                 datasplit.X_val   = StandardScaler(val_dataset.first);
                 datasplit.y_val   = val_dataset.second;
             }
-            /*
-                allocate sizes
-            */
             std::vector<MLPClassifier>  models;
-            std::vector<History>        hisotries;
+            std::vector<History>        histories;
 
-            for (const auto &mobj: conf["models"]) {
-                models.emplace_back(mobj);
+            for (auto& jmodel:conf["models"]) {
+                models.emplace_back(jmodel);
             }
-            
-            hisotries.reserve(models.size());
-            for (auto&model:models){
-                model.build();
-                hisotries.push_back(model.fit(datasplit));
+            for (size_t i = 0; i < models.size(); ++i) {
+                models[i].build();
+                std::cout << "model ______________["<< i + 1 <<"]______________\n";
+                histories.push_back(models[i].fit(datasplit));
             }
+            // std::vector<std::vector<PlotData>>      figures;
+            // std::vector<std::vector<std::string>>   ylabels;
 
-            // Visualizer::double_plot_metric("train & validation loss per epoch", history.loss_pair, "loss", {"red", "black"});
-            // Visualizer::double_plot_metric("train & validation accuracy per epoch", history.accuracy_pair, "accuracy", {"yellow", "blue"});
+            // for (const auto &history:histories) {
+
+            //     // for (const auto&[name, vptr]:history.vecMap) { // iterate over the map!
+
+            //     // }
+            // }
+            // Visualizer::multi_figures(figures, ylabels);
             // Visualizer::show();
-
         }
         return 0;
     }

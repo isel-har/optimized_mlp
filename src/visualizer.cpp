@@ -1,40 +1,36 @@
 #include "visualizer.hpp"
 
-    // Helper to generate the X-axis (epochs) based on data size
-std::vector<double> Visualizer::get_epochs(size_t size) {
+std::vector<double> Visualizer::get_epochs(size_t size)
+{
     std::vector<double> epochs(size);
-    std::iota(epochs.begin(), epochs.end(), 1.0); // 1.0, 2.0, ...
+    std::iota(epochs.begin(), epochs.end(), 1.0);
     return epochs;
 }
 
-void Visualizer::plot_metric(const std::string& title, const std::vector<double>& data, 
-                            const std::string& ylabel, const std::string& color)
-{  
-    std::vector<double> epochs = get_epochs(data.size());
+void    Visualizer::multi_plots(const std::vector<PlotData>&plots, std::string ylabel)
+{
+    if (!plots.size() || !plots[0].data.size())
+        throw std::runtime_error("size of plots and data cannot be 0.");
 
+    std::vector<double> epochs{get_epochs(plots[0].data.size())};
     plt::figure();
-    plt::named_plot(title, epochs, data, color);
-    plt::title(title);
-    plt::xlabel("Epoch");
+    for (const auto &plot:plots)
+        plt::plot(epochs, plot.data, {{"color", plot.color}, {"linestyle", plot.linestyle}});
+
+    plt::xlabel("epoch");
     plt::ylabel(ylabel);
     plt::grid(true);
     plt::legend();
 }
 
-void Visualizer::double_plot_metric(const std::string& title, 
-    const std::pair<std::vector<double>, std::vector<double>> &data, 
-    const std::string& ylabel,
-    std::pair<std::string, std::string>colors)
-{
-    std::vector<double> epochs = get_epochs(data.first.size());
-    plt::figure();
-    plt::plot(epochs, data.first,  {{"color", colors.first}});
-    plt::plot(epochs, data.second, {{"color", colors.second}, {"linestyle","--"}});
-    plt::title(title);
-    plt::xlabel("Epoch");
-    plt::ylabel(ylabel);
-    plt::grid(true);
-    // plt::legend();
+void    Visualizer::multi_figures(const std::vector<std::vector<PlotData>>&figures, std::vector<std::string>ylabels) {
+
+    if (figures.size() != ylabels.size())
+        throw std::runtime_error("number of y labels should be equal to figures.");
+
+    for (size_t i = 0; i < figures.size(); ++i) {
+        Visualizer::multi_plots(figures[i], ylabels[i]);
+    }
 }
 
 void Visualizer::show() {

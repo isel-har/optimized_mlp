@@ -50,8 +50,8 @@ std::pair<std::vector<std::string>, std::vector<std::string>> split_rows(std::ve
 
 void    save_splitted_data(const std::string &path, std::pair<std::vector<std::string>, std::vector<std::string>> *splitted_data)
 {
-    std::ofstream   trainf(path + "train.csv");
-    std::ofstream   testf(path + "test.csv");
+    std::ofstream   trainf(path + "data_train.csv");
+    std::ofstream   valf(path + "data_val.csv");
     
     size_t i = 0;
     while (i < splitted_data->first.size())
@@ -62,8 +62,8 @@ void    save_splitted_data(const std::string &path, std::pair<std::vector<std::s
     i = 0;
     while (i < splitted_data->second.size())
     {
-        testf << splitted_data->second.at(i) + "\n";
+        valf << splitted_data->second.at(i) + "\n";
         ++i;
     }
-    std::cout <<"train.csv and test.csv saved!\n";
+    std::cout <<"data_train.csv and data_val.csv are saved.\n";
 }

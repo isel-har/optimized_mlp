@@ -73,10 +73,11 @@ std::vector<json>  MLPClassifier::default_layers() {
     return jlayers;
 }
 
-void    MLPClassifier::build(void) { // need ranged/protections!
+void    MLPClassifier::build(void) {
 
-    if (this->confptr == nullptr) throw std::runtime_error("config object required to build.");
-    
+    if (this->confptr == nullptr)
+        throw std::runtime_error("config object required to build.");
+        
     const json conf = *this->confptr;
 
     double learning_rate      = conf.value("learning_rate", 0.01);
@@ -147,8 +148,11 @@ History MLPClassifier::fit(const t_split &dataset) {
     if (!this->built)
         throw std::runtime_error("build required before training phase.");
 
+    if (this->input_shape != (size_t)dataset.X_train.cols())    
+        throw std::runtime_error("input shape must be equal to given input cols");
+        
+        
     History history(this->epochs);
-
     // double  optimal_loss = std::numeric_limits<double>::max();
     // char    patience     = 6;
     // char    times        = 0;

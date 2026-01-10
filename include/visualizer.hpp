@@ -6,25 +6,24 @@
 #include <string>
 #include <numeric>
 #include <utility>
+#include "history.hpp"
 
 namespace plt = matplotlibcpp;
 
+typedef struct {
+    std::string         title;
+    std::vector<double> data;
+    std::string         color;
+    std::string         linestyle;
+} PlotData;
+
+
 class Visualizer {
 public:
-    // Helper to generate the X-axis (epochs) based on data size
-    static std::vector<double> get_epochs(size_t size);
+    static std::vector<double>  get_epochs(size_t size);
 
-    // Generic method to plot any metric from your History map
-    static void plot_metric(const std::string& title, 
-                            const std::vector<double>& data, 
-                            const std::string& ylabel, 
-                            const std::string& color);
-
-    static void double_plot_metric(const std::string& title, 
-    const std::pair<std::vector<double>, std::vector<double>> &data, 
-    const std::string& ylabel,
-    std::pair<std::string, std::string>colors);
-
+    static void multi_plots(const std::vector<PlotData>&plots, std::string ylabel); // multi curves 1 figure
+    static void multi_figures(const std::vector<std::vector<PlotData>>&figures, std::vector<std::string>ylabels);
     static void show();
 };
 
