@@ -3,7 +3,8 @@
 std::unordered_map<std::string, Metric*> MLPClassifier::metricsMap = {
     {"accuracy", new Accuracy()},
     {"precision", new Precision()},
-    {"loss", new BinarycrossEntropy()}};
+    {"loss", new BinarycrossEntropy()}
+};
 
 MLPClassifier::MLPClassifier(const json& conf) : built(false), earlystopping(false)
 {
@@ -62,43 +63,41 @@ void MLPClassifier::train_val_metrics(unsigned int epoch, const t_split& dataset
     std::cout << std::endl;
 }
 
-std::vector<json> MLPClassifier::default_layers()
+std::vector<json> MLPClassifier::default_layers()//!!
 {
     std::vector<json> jlayers;
     json              hidden;
 
-    hidden["size"]       = 12;
-    hidden["shape"]      = "xshape";
+    hidden["size"]       = 16;
     hidden["activation"] = "relu";
-
     jlayers.push_back(hidden);
-    hidden["shape"] = "prev";
+    hidden["size"] = 8;
     jlayers.push_back(hidden);
     hidden["activation"] = "softmax";
+    hidden["size"] = 2;
     jlayers.push_back(hidden);
     return jlayers;
 }
 
-void MLPClassifier::build(void)
+void MLPClassifier::build(unsigned int shape)
 {
     if (this->confptr == nullptr)
         throw std::runtime_error("config object required to build.");
 
     const json conf = *this->confptr;
+    this->input_shape            = shape;// to fix!
 
-    double      learning_rate = conf.value("learning_rate", 0.01);
-    std::string optimizer_str = conf.value("optimizer", std::string("gd"));
-
-    this->epochs                 = conf.value("epochs", 10);
-    this->input_shape            = conf.value("input_shape", 31);
-    this->batch_size             = conf.value("batch_size", 32);
+    double      learning_rate    = checked_range(conf.value("learning_rate", 0.01), 0.01, 0.1, "learning_rate");
+    this->epochs                 = checked_range(conf.value("epochs", 10), 1, 100, "epochs");
+    this->batch_size             = checked_range(conf.value("batch_size", 32), 1, 256, "batch_size"); 
     this->earlystopping._enabled = conf.value("early_stopping", false);
+    this->optimizer              = conf.value("adam_optimizer", false)? new GradientDescent(learning_rate):new GradientDescent(learning_rate);
 
-    std::vector<std::string> metrics = conf.value("metrics", std::vector<std::string>({"loss"}));
+    std::vector<std::string> metrics = conf.value("metrics", std::vector<std::string>({}));
+    checked_range(metrics.size(), (size_t)0, (size_t)4, "metrics_size");
 
     auto unique_metrics = std::unordered_set<std::string>(metrics.begin(), metrics.end());
-    unique_metrics.erase("loss");
-    // pop loss here and always use it
+    
     for (const auto& metric : unique_metrics)
     {
         if (MLPClassifier::metricsMap.find(metric) != MLPClassifier::metricsMap.end())
@@ -106,24 +105,17 @@ void MLPClassifier::build(void)
             this->metrics.push_back(std::make_pair(metric, MLPClassifier::metricsMap[metric]));
         }
     }
-
-    std::vector<json> layers_json = conf.value("layers", this->default_layers()); // to change
-
-    if (layers_json.size() < 2)
-        throw std::runtime_error("neural network cannot be less than 2 layers.");
-    this->layers.emplace_back(this->input_shape, layers_json[0]["size"],
+    std::vector<json> layers_json = conf.value("layers", this->default_layers()); // default two hidden layers + output layer
+    checked_range(layers_json.size(), (size_t)2, (size_t)11, "layers_stack_size");
+    checked_layers(layers_json);
+    
+    this->layers.emplace_back(shape, layers_json[0]["size"],
                               layers_json[0]["activation"]);
-
     for (size_t i = 1; i < layers_json.size(); ++i)
     {
         unsigned int shape = layers_json[i - 1]["size"];
         this->layers.emplace_back(shape, layers_json[i]["size"], layers_json[i]["activation"]);
     }
-
-    if (optimizer_str == "gd")
-        this->optimizer = new GradientDescent(learning_rate);
-    // else if (optimizer_str == "adam")
-    //     this->optimizer = new Adam(learning_rate);
     this->built = true;
 }
 
@@ -167,32 +159,34 @@ History MLPClassifier::fit(const t_split& dataset)
         throw std::runtime_error("input shape must be equal to given input cols");
 
     History history(this->epochs);
+    unsigned int e = 1;
+    double      loss_e = 0.0;
 
-    for (unsigned int e = 1; e <= this->epochs; ++e)
+    while (e <= epochs && !earlystopping(loss_e))
     {
         for (unsigned int i = 0; i < (unsigned int) dataset.X_train.rows(); i += batch_size)
         {
             unsigned int end = std::min(i + batch_size, (unsigned int) dataset.X_train.rows());
-
+    
             MatrixXd xbatch = dataset.X_train.middleRows(i, end - i);
             MatrixXd ybatch = dataset.y_train.middleRows(i, end - i);
-
+    
             MatrixXd probs = this->feed(xbatch);
             MatrixXd loss  = (probs.array() - ybatch.array()).matrix();
-
+    
             this->backward(loss);
             this->optimizer->update(this->layers);
         }
         this->train_val_metrics(e, dataset, history);
-        if (this->earlystopping(history.loss_pair.second[e - 1]))
-            break;
+        loss_e = history.loss_pair.second[e - 1];
+        ++e;
     }
     return history;
 }
 
-void MLPClassifier::save() const
+void MLPClassifier::save(const std::string &name) const
 {
-    std::ofstream file("model.bin", std::ios::binary);
+    std::ofstream file(name, std::ios::binary);
     if (!file)
         throw std::runtime_error("Failed to open file for saving model.");
 
@@ -225,5 +219,5 @@ void MLPClassifier::save() const
             file.write(reinterpret_cast<const char*>(&layer.biases(0, i)), sizeof(double));
         }
     }
-    std::cout << "model saved\n";
+    std::cout << '\'' << name + "\' saved\n";
 }

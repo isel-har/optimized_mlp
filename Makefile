@@ -2,21 +2,21 @@ CXX := g++
 NAME := mlp
 
 NUMPY_PATH := /usr/lib/python3/dist-packages/numpy/core/include/
-PYTHON_PATH := /usr/include/python3.12
+PYTHON_PATH := /usr/include/python3.10
 
-CXXFLAGS := -O3 -march=corei7 -msse4.2 -std=c++17 \
+CXXFLAGS := -O3 -march=corei7 -mavx2 -std=c++17 \
             -Wall -Wextra \
             -Wno-deprecated-copy -Wno-deprecated-declarations
 
 INCLUDES := -I lib -I lib/eigen -I include \
             -I $(NUMPY_PATH) -I $(PYTHON_PATH)
 
-LIBS := -lpython3.12
+LIBS := -lpython3.10
 
-SRCS := main.cpp src/activations.cpp   src/json_loader.cpp    src/optimizers.cpp \
-	src/csv_to_eigen.cpp  src/layer.cpp          src/scaler.cpp \
-	src/data_spliter.cpp  src/metrics.cpp        src/visualizer.cpp \
-	src/history.cpp       src/mlpclassifier.cpp \
+SRCS := main.cpp \
+	src/activations.cpp  src/csv_to_eigen.cpp  src/history.cpp  src/layer.cpp  src/mlpclassifier.cpp  src/scaler.cpp src/visualizer.cpp \
+	src/csv_split.cpp    src/earlystopping.cpp  src/json_loader.cpp  src/metrics.cpp  src/optimizers.cpp src/train_val_split.cpp \
+	src/commands.cpp  src/app.cpp
 
 OBJS = $(SRCS:.cpp=.o)
 

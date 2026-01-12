@@ -1,7 +1,7 @@
 #include "earlystopping.hpp"
 
 EarlyStopping::EarlyStopping(bool enabled)
-    : _enabled(enabled), _patience(5), optimal_loss(std::numeric_limits<double>::max())
+    : _enabled(enabled), _patience(6), optimal_loss(std::numeric_limits<double>::max())
 {
 }
 EarlyStopping::EarlyStopping(char patience, bool enabled)

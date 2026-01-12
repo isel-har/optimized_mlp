@@ -8,6 +8,7 @@
 #include "layer.hpp"
 #include "metrics.hpp"
 #include "optimizers.hpp"
+#include "checker.tpp"
 
 #include <algorithm>
 #include <exception>
@@ -43,8 +44,8 @@ class MLPClassifier
     ~MLPClassifier();
 
     void    load();
-    void    save() const;
-    void    build(void);
+    void    save(const std::string &name) const;
+    void    build(unsigned int);
     History fit(const t_split&);
 
     std::vector<json> default_layers();

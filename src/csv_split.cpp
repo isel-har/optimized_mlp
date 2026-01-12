@@ -1,4 +1,4 @@
-#include "data_spliter.h"
+#include "csv_split.hpp"
 
 std::vector<std::string> csv_to_rawstrs(const char* csvpath)
 {
@@ -27,7 +27,7 @@ void shuffle_rows(std::vector<std::string>* rowsptr)
 std::pair<std::vector<std::string>, std::vector<std::string>>
 split_rows(std::vector<std::string>* rowsptr, float test_size)
 {
-    std::pair<std::vector<std::string>, std::vector<std::string>> splited_pair;
+    std::pair<std::vector<std::string>, std::vector<std::string>> split_pair;
 
     // if (randomize == true)
     shuffle_rows(rowsptr);
@@ -36,20 +36,20 @@ split_rows(std::vector<std::string>* rowsptr, float test_size)
     size_t i           = 0;
     while (i < rowsptr->size() - train_size_)
     {
-        splited_pair.first.push_back(rowsptr->at(i));
+        split_pair.first.push_back(rowsptr->at(i));
         ++i;
     }
     size_t j = 0;
     while (j < train_size_)
     {
-        splited_pair.second.push_back(rowsptr->at(i));
+        split_pair.second.push_back(rowsptr->at(i));
         ++j;
         ++i;
     }
-    return splited_pair;
+    return split_pair;
 }
 
-void save_splitted_data(
+void save_split_data(
     const std::string&                                             path,
     std::pair<std::vector<std::string>, std::vector<std::string>>* splitted_data)
 {
