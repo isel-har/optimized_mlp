@@ -32,24 +32,24 @@ void MLPClassifier::train_val_metrics(unsigned int epoch, const t_split& dataset
 
     double loss     = this->metricsMap["loss"]->compute(ypred_train, dataset.y_train);
     double loss_val = this->metricsMap["loss"]->compute(ypred_val, dataset.y_val);
-    history.loss_pair.first[index]  = loss;
-    history.loss_pair.second[index] = loss_val;
+    history.vecMap["loss"].first[index]  = loss;
+    history.vecMap["loss"].second[index] = loss_val;
 
-    for (auto& [name, vecPtr] : history.vecMap)
+    for (auto& [name, vec] : history.vecMap)
     {
         if (name != "loss")
         {
             double metric_train     = this->metricsMap[name]->compute(ypmax_train, dataset.y_train);
             double metric_val       = this->metricsMap[name]->compute(ypmax_val, dataset.y_val);
-            vecPtr->first.at(index) = metric_train;
-            vecPtr->second.at(index) = metric_val;
+            vec.first.at(index) = metric_train;
+            vec.second.at(index) = metric_val;
         }
     }
 
     std::cout << "- loss:" << loss;
     for (const auto& metric : this->metrics)
     {
-        double metric_ = history.vecMap[metric.first]->first.at(index);
+        double metric_ = history.vecMap[metric.first].first.at(index);
         std::cout << " - " << metric.first << ':' << metric_;
     }
 
@@ -57,13 +57,13 @@ void MLPClassifier::train_val_metrics(unsigned int epoch, const t_split& dataset
     std::cout << "- loss:" << loss_val;
     for (const auto& metric : this->metrics)
     {
-        double metric_ = history.vecMap[metric.first]->second.at(index);
+        double metric_ = history.vecMap[metric.first].second.at(index);
         std::cout << " - " << metric.first << ':' << metric_;
     }
     std::cout << std::endl;
 }
 
-std::vector<json> MLPClassifier::default_layers()//!!
+std::vector<json> MLPClassifier::default_layers()
 {
     std::vector<json> jlayers;
     json              hidden;
@@ -178,7 +178,7 @@ History MLPClassifier::fit(const t_split& dataset)
             this->optimizer->update(this->layers);
         }
         this->train_val_metrics(e, dataset, history);
-        loss_e = history.loss_pair.second[e - 1];
+        loss_e = history.vecMap["loss"].second[e - 1];
         ++e;
     }
     return history;

@@ -1,13 +1,5 @@
 #include "activations.hpp"
 
-// Matrix  Activation::relu(const Matrix &mt) {
-
-//     Matrix am = Matrix(mt.get_rowsize(), 1);
-//     for (size_t i = 0; i < mt.get_rowsize(); ++i)
-//         am[i][0] = std::max((double)0, mt[i][0]);
-//     return am;
-// }
-
 MatrixXd relu(const MatrixXd& m, bool derivative)
 {
     if (!derivative)

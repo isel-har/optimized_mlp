@@ -21,24 +21,24 @@ using json = nlohmann::json;
 class MLPClassifier
 {
   private:
-    static std::unordered_map<std::string, Metric*> metricsMap;
-
-    unsigned int epochs;
-    unsigned int batch_size;
-    unsigned int input_shape;
-    bool         built;
-
-    std::vector<std::pair<std::string, Metric*>> metrics;
-    std::vector<Layer>                           layers;
-
-    Optimizer*    optimizer = nullptr;
-    const json*   confptr   = nullptr;
-    EarlyStopping earlystopping;
-
-    MatrixXd feed(const MatrixXd&);
-    void     backward(const MatrixXd&);
-
+  
+  static std::unordered_map<std::string, Metric*> metricsMap;
+  unsigned int epochs;
+  unsigned int batch_size;
+  unsigned int input_shape;
+  bool         built;
+  
+  std::vector<Layer>                           layers;
+  
+  Optimizer*    optimizer = nullptr;
+  const json*   confptr   = nullptr;
+  EarlyStopping earlystopping;
+  
+  MatrixXd feed(const MatrixXd&);
+  void     backward(const MatrixXd&);
+  
   public:
+    std::vector<std::pair<std::string, Metric*>> metrics;
     MLPClassifier();
     MLPClassifier(const json&);
     ~MLPClassifier();
