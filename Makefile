@@ -15,7 +15,7 @@ LIBS := -lpython3.10
 
 SRCS := main.cpp \
 	src/activations.cpp  src/csv_to_eigen.cpp  src/history.cpp  src/layer.cpp  src/mlpclassifier.cpp  src/scaler.cpp src/visualizer.cpp \
-	src/csv_split.cpp    src/earlystopping.cpp  src/json_loader.cpp  src/metrics.cpp  src/optimizers.cpp src/train_val_split.cpp \
+	src/save_split_scaler.cpp    src/earlystopping.cpp  src/json_loader.cpp  src/metrics.cpp  src/optimizers.cpp \
 	src/commands.cpp  src/app.cpp
 
 OBJS = $(SRCS:.cpp=.o)

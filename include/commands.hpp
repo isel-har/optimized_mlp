@@ -5,11 +5,11 @@
 #include <string>
 #include <vector>
 
-#include "train_val_split.hpp"
+// #include "train_val_split.hpp"
 #include "mlpclassifier.hpp"
 #include "json_loader.hpp"
 #include "visualizer.hpp"
-#include "csv_split.hpp"
+#include "save_split_scaler.hpp"
 #include "metrics.hpp"
 
 int     cmd_split();

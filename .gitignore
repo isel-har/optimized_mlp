@@ -2,4 +2,5 @@ lib/eigen/.git
 lib/eigen/
 lib/
 model_*.bin
+*.bin
 mlp

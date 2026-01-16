@@ -17,6 +17,6 @@ typedef struct DatasetSplit
     MatrixXd y_val;
 } t_split;
 
-std::pair<MatrixXd, MatrixXd> csv_to_eigen(const std::string&);
+std::pair<MatrixXd, MatrixXd> csv_to_eigen(rapidcsv::Document& doc);
 
 #endif
